@@ -3,9 +3,15 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 // HELPER FUNCTION
-function generateRandomString() {
-  // code to be executed
+const generateRandomString = (len, arr) => {
+  let ans = '';
+  for (let i = len; i > 0; i--) {
+    ans +=
+      arr[Math.floor(Math.random(6) * arr.length)];
+  }
+  return ans;
 }
+console.log(generateRandomString(6, '0123456789abcdefghijklmnopqrstuvwxyz'))
 
 
 app.set("view engine", "ejs");
@@ -32,7 +38,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id]
-  const templateVars = { id, longURL};
+  const templateVars = { id, longURL };
   res.render("urls_show", templateVars);
 });
 
