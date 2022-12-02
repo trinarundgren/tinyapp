@@ -3,16 +3,9 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 // HELPER FUNCTION
-const generateRandomString = (len, arr) => {
-  let ans = '';
-  for (let i = len; i > 0; i--) {
-    ans +=
-      arr[Math.floor(Math.random(6) * arr.length)];
-  }
-  return ans;
-}
-console.log(generateRandomString(6, '0123456789abcdefghijklmnopqrstuvwxyz'))
-
+const generateRandomString = () => {
+  return Math.random().toString(36).substring(6);
+};
 
 app.set("view engine", "ejs");
 
