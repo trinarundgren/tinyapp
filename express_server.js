@@ -1,8 +1,13 @@
+///////////////////////////////////////////////////
+/* SETUP / FUNCTIONS / VARIABLES */
+
+// app config
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
-// HELPER FUNCTION
+// function
+
 const generateRandomString = () => {
   return Math.random().toString(36).substring(6);
 };
@@ -22,16 +27,23 @@ app.get("/hello", (req, res) => {
 });
 
 // RENDERING ROUTES 
+
 // URL NEW
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.get('/urls.json', (req, res) => {
+  res.send(urlDatabase);
+})
+
+
+
 // URL SHOW
 app.get("/urls/:id", (req, res) => {
-  const id = req.params.id;
-  const longURL = urlDatabase[id]
-  const templateVars = { id, longURL };
+  const userID = req.params.id;
+  const longURL = urlDatabase[userID]
+  const templateVars = { id: userID, longURL };
   res.render("urls_show", templateVars);
 });
 
@@ -44,10 +56,19 @@ app.get("/urls", (req, res) => {
 // URL CRUD
 // Create - POST 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const shortUrl = generateRandomString();
+  urlDatabase[shortUrl] = req.body.longURL;
+  res.redirect(`/urls/${shortUrl}`);
 });
 
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+});
+
+app.get('/urls/:shortURL', (req, res) => {
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  res.render('urls_show', templateVars);
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
