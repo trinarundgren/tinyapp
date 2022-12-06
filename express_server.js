@@ -1,5 +1,7 @@
 ///////////////////////////////////////////////////
-/* SETUP / FUNCTIONS / VARIABLES */
+/* SETUP / 
+
+FUNCTIONS / VARIABLES */
 
 // app config
 const express = require("express");
@@ -37,8 +39,6 @@ app.get('/urls.json', (req, res) => {
   res.send(urlDatabase);
 })
 
-
-
 // URL SHOW
 app.get("/urls/:id", (req, res) => {
   const userID = req.params.id;
@@ -68,6 +68,22 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render('urls_show', templateVars);
+});
+
+app.post('/urls/:shortURL/delete', (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
+});
+
+app.get('/u/:shortURL', (req, res) => {
+  const longURL = urlDatabase[req.params.shortUrl];
+
+  if (longURL) {
+    res.redirect(urlDatabase[req.params.shortURL]);
+  } else {
+    res.statusCode = 404;
+    res.send('<h2>404 Page Not Found<br>This short URL is not found.</h2>')
+  }
 });
 
 app.listen(PORT, () => {
