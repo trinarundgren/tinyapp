@@ -37,7 +37,7 @@ app.get("/urls/new", (req, res) => {
 
 // URL INDEX
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies['username'] };
+  const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -50,13 +50,14 @@ app.post("/urls", (req, res) => {
 
 // Create New URL 
 app.get('/urls/new', (req, res) => {
-  const templateVars = {username: req.cookies['username']};
+  // const templateVars = {username: req.cookies['username']};
   res.render('urls_new', templateVars);
+  // res.redirect(`/urls/${shortUrl}`);
 });
 
 // URL showing short and long URL
-app.get("/urls/:id", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies['username'] };
+app.get("/urls/:shortURL", (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
@@ -67,53 +68,24 @@ app.post('/urls/:shortUrl', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-//delete URL from database and redirect to index
+//deletes url from database redirect to index 
 app.post('/urls/:shortURL/delete', (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });
 
-// redirect from short to long urls
+// redirection from short to the long 
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortUrl];
+  const longURL = urlDatabase[req.params.shortURL];
 
   if (longURL) {
     res.redirect(urlDatabase[req.params.shortURL]);
   } else {
     res.statusCode = 404;
-    res.send('<h2>404 Page Not Found<br>This short URL is not found.</h2>')
+    res.send('<h2>404 Not Found<br>This short URL does not exist.</h2>')
   }
 });
 
-// LOGIN stuff
-app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect('/urls');
-});
-
-//LOGOUT
-app.post('/logout', (req, res) => {
-  res.clearCookie('username');
-  res.redirect('/urls');
-});
-
-//REGISTRATION
-app.get('/register', (res, req) => {
-  let templateVars = {username: req.cookies['username']};
-  res.render('urls_registration', templateVars);
-});
-
-//REGISTER
-app.post('/register', (req, res) => {
-  const userID = generateRandomString();
-  users[userID] = {
-    userID,
-    email: req.body.email,
-    password: req.body.password
-  }
-  res.cookie('user_id', userID);
-  res.redirect('/urls');
-});
 
 // SERVER STUFF
 app.listen(PORT, () => {
