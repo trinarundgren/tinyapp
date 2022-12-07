@@ -69,8 +69,10 @@ app.post('/urls/:shortUrl', (req, res) => {
 });
 
 //deletes url from database redirect to index 
-app.post('/urls/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+app.post('/urls/:id/delete', (req, res) => {
+  console.log('checking for this');
+  delete urlDatabase[req.params.id];
+  console.log(req.params.id)
   res.redirect('/urls');
 });
 
