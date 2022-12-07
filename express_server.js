@@ -88,6 +88,11 @@ app.get('/u/:shortURL', (req, res) => {
   }
 });
 
+// LOGIN stuff
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
 
 // SERVER STUFF
 app.listen(PORT, () => {
