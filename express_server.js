@@ -33,7 +33,8 @@ app.get('/urls.json', (req, res) => {
 
 // URL NEW
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies['username'] };
+  res.render("urls_new", templateVars);
 });
 
 // URL INDEX
