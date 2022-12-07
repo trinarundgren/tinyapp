@@ -53,7 +53,7 @@ app.post("/urls", (req, res) => {
 app.get('/urls/new', (req, res) => {
   const templateVars = {username: req.cookies['username']};
   res.render('urls_new', templateVars);
-  // res.redirect(`/urls/${shortUrl}`);
+  res.redirect(`/urls/${shortUrl}`);
 });
 
 // URL showing short and long URL
@@ -101,6 +101,23 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls');
 });
 
+// registration page
+app.get('/register', (req, res) => {
+  let templateVars = {username: req.cookies['username']};
+  res.render('urls_registration', templateVars);
+});
+
+// register functionality
+app.post('/register', (req, res) => {
+  const userID = generateRandomString();
+  users[userID] = {
+    userID,
+    email: req.body.email,
+    password: req.body.password
+  }
+  res.cookie('user_id', userID);
+  res.redirect('/urls');
+});
 
 // SERVER STUFF
 app.listen(PORT, () => {
