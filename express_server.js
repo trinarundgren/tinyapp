@@ -1,7 +1,5 @@
-///////////////////////////////////////////////////
-/* SETUP / 
 
-FUNCTIONS / VARIABLES */
+/* SETUP / FUNCTIONS / VARIABLES */
 
 // app config
 const express = require("express");
@@ -10,6 +8,7 @@ const PORT = 8080; // default port 8080
 
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
@@ -18,13 +17,33 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
  
-const users = {};
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
 
 const generateRandomString = () => {
   return Math.random().toString(36).substring(6);
 };
 
-// RENDERING ROUTES ////////////////////////////////////////////////////////
+const findUserWithEmailInDatabase = (email, database) => {
+  for (const user in database) {
+    if (database[user].email === email) {
+      return database[user];
+    }
+  }
+  return undefined;
+}
+
+// *******************RENDERING ROUTES *********************************
 
 app.get('/urls.json', (req, res) => {
   res.send(urlDatabase);
@@ -32,12 +51,13 @@ app.get('/urls.json', (req, res) => {
 
 // URL NEW
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { user: users[req.cookies['user_id']] };
+  res.render("urls_new", templateVars);
 });
 
 // URL INDEX
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, user: users[req.cookies['user_id']] };
   res.render("urls_index", templateVars);
 });
 
@@ -50,14 +70,14 @@ app.post("/urls", (req, res) => {
 
 // Create New URL 
 app.get('/urls/new', (req, res) => {
-  // const templateVars = {username: req.cookies['username']};
+  const templateVars = {user_id: req.cookies['user_id']};
   res.render('urls_new', templateVars);
-  // res.redirect(`/urls/${shortUrl}`);
+  res.redirect(`/urls/${shortUrl}`);
 });
 
 // URL showing short and long URL
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies['user_id']] };
   res.render("urls_show", templateVars);
 });
 
@@ -85,6 +105,65 @@ app.get('/u/:shortURL', (req, res) => {
   } else {
     res.statusCode = 404;
     res.send('<h2>404 Not Found<br>This short URL does not exist.</h2>')
+  }
+});
+
+//LOGIN PAGE
+app.get('/login', (req, res) => {
+  let templateVars = {user: users[req.cookies['user_id']]};
+  res.render('urls_login', templateVars)
+});
+
+// LOGIN stuff
+app.post('/login', (req, res) => {
+  const user = findUserWithEmailInDatabase(req.body.email, users);
+  if (user) {
+    if (req.body.password === user.password) {
+      res.cookie('user_id', user.userID);
+      res.redirect('/urls');
+    } else {
+      res.statusCode = 403;
+      res.send('<h2>403 FORBIDDEN<br>Incorrect Password</h2>')
+    }
+  } else {
+    res.statusCode = 403;
+    res.send('<h2>403 FORBIDDEN<br>Email address not registered</h2>')
+  }
+  // res.cookie('username', req.body.username);
+  // res.redirect('/urls');
+});
+
+//LOGOUT
+app.post('/logout', (req, res) => {
+  res.clearCookie('user_id');
+  res.redirect('/urls');
+});
+
+// registration page
+app.get('/register', (req, res) => {
+  let templateVars = {user: users[req.cookies['user_id']]};
+  res.render('urls_registration', templateVars);
+});
+
+//REGISTER
+app.post('/register', (req, res) => {
+  if (req.body.email && req.body.password) {
+    if (!findUserWithEmailInDatabase(req.body.email, users)) {
+      const userID = generateRandomString();
+      users[userID] = {
+        userID,
+        email: req.body.email,
+        password: req.body.password
+      }
+      res.cookie('user_id', userID);
+      res.redirect('/urls');
+    } else {
+      res.statusCode = 400;
+      res.send('<h2>400 - ERROR <br>Email already in use.</h2>')
+    }
+  } else {
+    res.statusCode = 400;
+    res.send('<h2>400 - ERROR <br>Both email and password fields are required.</h2>')
   }
 });
 
