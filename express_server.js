@@ -12,23 +12,13 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
- 
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
+
+const urlDatabase = {};
+const users = {};
 
 const generateRandomString = () => {
   return Math.random().toString(36).substring(6);
@@ -51,8 +41,13 @@ app.get('/urls.json', (req, res) => {
 
 // URL NEW
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies['user_id']] };
-  res.render("urls_new", templateVars);
+  
+  if (req.cookies['user_id']) {
+    const templateVars = { user: users[req.cookies['user_id']] };
+    res.render('urls_new', templateVars);
+  } else {
+    res.redirect('/login');
+  }
 });
 
 // URL INDEX
@@ -61,14 +56,17 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// Submitting to shorten URL / and redirects to shortURL
+// create new url and add to database
 app.post("/urls", (req, res) => {
   const shortUrl = generateRandomString();
-  urlDatabase[shortUrl] = req.body.longURL;
+  urlDatabase[shortUrl] = {
+    longURL: req.body.longURL,
+    userID: req.cookies['user_id']
+  };
   res.redirect(`/urls/${shortUrl}`);
 });
 
-// Create New URL 
+// Create New URL - validate logged in
 app.get('/urls/new', (req, res) => {
   const templateVars = {user_id: req.cookies['user_id']};
   res.render('urls_new', templateVars);
@@ -77,14 +75,14 @@ app.get('/urls/new', (req, res) => {
 
 // URL showing short and long URL
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies['user_id']] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies['user_id']] };
   res.render("urls_show", templateVars);
 });
 
 // update LongURL in database
 app.post('/urls/:shortUrl', (req, res) => {
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.updatedURL;
+  urlDatabase[shortURL].longURL = req.body.updatedURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -98,13 +96,13 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // redirection from short to the long 
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-
-  if (longURL) {
-    res.redirect(urlDatabase[req.params.shortURL]);
+  
+  if (urlDatabase[req.params.shortURL]) {
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
   } else {
+    let templateVars = { urlDatabase: {}, shortURL: '', user: users[req.session.user_id] };
     res.statusCode = 404;
-    res.send('<h2>404 Not Found<br>This short URL does not exist.</h2>')
+    res.render('urls_show', templateVars);
   }
 });
 
