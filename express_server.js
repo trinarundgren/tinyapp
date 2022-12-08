@@ -34,7 +34,7 @@ const generateRandomString = () => {
   return Math.random().toString(36).substring(6);
 };
 
-const findEmailInDatabase = (email, database) => {
+const findUserWithEmailInDatabase = (email, database) => {
   for (const user in database) {
     if (database[user].email === email) {
       return database[user];
@@ -70,7 +70,7 @@ app.post("/urls", (req, res) => {
 
 // Create New URL 
 app.get('/urls/new', (req, res) => {
-  const templateVars = {username: req.cookies['username']};
+  const templateVars = {user_id: req.cookies['user_id']};
   res.render('urls_new', templateVars);
   res.redirect(`/urls/${shortUrl}`);
 });
@@ -116,13 +116,26 @@ app.get('/login', (req, res) => {
 
 // LOGIN stuff
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect('/urls');
+  const user = findUserWithEmailInDatabase(req.body.email, users);
+  if (user) {
+    if (req.body.password === user.password) {
+      res.cookie('user_id', user.userID);
+      res.redirect('/urls');
+    } else {
+      res.statusCode = 403;
+      res.send('<h2>403 FORBIDDEN<br>Incorrect Password</h2>')
+    }
+  } else {
+    res.statusCode = 403;
+    res.send('<h2>403 FORBIDDEN<br>Email address not registered</h2>')
+  }
+  // res.cookie('username', req.body.username);
+  // res.redirect('/urls');
 });
 
 //LOGOUT
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
@@ -135,7 +148,7 @@ app.get('/register', (req, res) => {
 //REGISTER
 app.post('/register', (req, res) => {
   if (req.body.email && req.body.password) {
-    if (!findEmailInDatabase(req.body.email, users)) {
+    if (!findUserWithEmailInDatabase(req.body.email, users)) {
       const userID = generateRandomString();
       users[userID] = {
         userID,
