@@ -129,14 +129,13 @@ app.post('/login', (req, res) => {
     res.statusCode = 403;
     res.send('<h2>403 FORBIDDEN<br>Email address not registered</h2>')
   }
-  // res.cookie('username', req.body.username);
-  // res.redirect('/urls');
+
 });
 
 //LOGOUT
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 // registration page
