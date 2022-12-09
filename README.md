@@ -12,7 +12,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 <img src="/screenshots/Register.PNG"
      alt="Registration page"
      style="float: left; margin-right: 10px;" />
-<img src="/screenshots/create new url.png"
+<img src="/screenshots/create new url.PNG"
      alt="Create new url page"
      style="float: left; margin-right: 10px;" />
 
