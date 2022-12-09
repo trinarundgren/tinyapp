@@ -86,8 +86,8 @@ app.post('/urls/:shortUrl', (req, res) => {
   res.redirect(`/urls`);
 });
 
-//deletes url from database redirect to index
-app.post('/urls/:id/delete', (req, res) => {
+//deletes url from database 
+app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
 
   if (req.cookies['user_id'] === urlDatabase[shortURL].user_id) {
@@ -101,7 +101,7 @@ app.post('/urls/:id/delete', (req, res) => {
 app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
   if (longURL) {
-    res.redirect(urlDatabase[req.params.shortURL].longURL);
+    res.redirect(longURL);
   } else {
     res.statusCode = 404;
     res.send('<h2>404 - ERROR - short URL does not exist.</h2>')
