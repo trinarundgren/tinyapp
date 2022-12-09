@@ -3,14 +3,12 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const bcrypt = require("bcryptjs");
 
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-const bcrypt = require('bcrypt');
-
 app.set("view engine", "ejs");
-
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {};
@@ -120,17 +118,13 @@ app.get('/login', (req, res) => {
 // LOGIN stuff
 app.post('/login', (req, res) => {
   const user = findUserWithEmailInDatabase(req.body.email, users);
-  if (user) {
-    if (req.body.password === user.password) {
-      res.cookie('user_id', user.user_id);
-      res.redirect('/urls');
-    } else {
-      res.statusCode = 403;
-      res.send('<h2>403 FORBIDDEN<br>Incorrect Password</h2>');
-    }
+
+  if (user && bcrypt.compareSync(req.body.password, user.password)) {
+    req.session.userID = user.userID;
+    res.redirect('/urls');
   } else {
-    res.statusCode = 403;
-    res.send('<h2>403 FORBIDDEN<br>Email address not registered</h2>');
+    const errorMessage = 'Login credentials not valid. Please make sure you enter the correct username and password.';
+    res.status(401).render('urls_error', {user: users[req.session.userID], errorMessage});
   }
 });
 
