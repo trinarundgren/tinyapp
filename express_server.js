@@ -4,10 +4,10 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
-
+const { getUserByEmail } = require('./helpers');
 const cookieSession = require('cookie-session');
-app.use(cookieSession({name: 'session', secret: 'UnicornPoop1973'}));
 
+app.use(cookieSession({name: 'session', secret: 'UnicornPoop1973'}));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
@@ -18,14 +18,6 @@ const generateRandomString = () => {
   return Math.random().toString(36).substring(6);
 };
 
-const findUserWithEmailInDatabase = (email, database) => {
-  for (const user in database) {
-    if (database[user].email === email) {
-      return database[user];
-    }
-  }
-  return undefined;
-};
 
 const urlsForUser = (id) => {
   let userUrls = {};
@@ -34,7 +26,7 @@ const urlsForUser = (id) => {
     if (urlDatabase[shortURL].user_id === id) {
       userUrls[shortURL] = urlDatabase[shortURL];
     }
-  }
+  };
 
   return userUrls;
 };
@@ -117,7 +109,7 @@ app.get('/login', (req, res) => {
 
 // LOGIN stuff
 app.post('/login', (req, res) => {
-  const user = findUserWithEmailInDatabase(req.body.email, users);
+  const user = getUserByEmail(req.body.email, users);
 
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
     req.session.user_id = user.userID;
@@ -145,7 +137,7 @@ app.get('/register', (req, res) => {
 // register functionality
 app.post('/register', (req, res) => {
   if (req.body.email && req.body.password) {
-    if (!findUserWithEmailInDatabase(req.body.email, users)) {
+    if (!getUserByEmail(req.body.email, users)) {
       const userID = generateRandomString();
       users[userID] = {
         userID,
