@@ -7,7 +7,10 @@ const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
+const bcrypt = require('bcrypt');
+
 app.set("view engine", "ejs");
+
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {};
@@ -151,7 +154,7 @@ app.post('/register', (req, res) => {
       users[user_id] = {
         user_id,
         email: req.body.email,
-        password: req.body.password
+        password: bcrypt.hashSync(req.body.password, 10)
       };
       res.cookie('user_id', user_id);
       res.redirect('/urls');
