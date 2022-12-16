@@ -17,14 +17,12 @@ const { getUserByEmail, generateRandomString, urlsForUser } = require('./helpers
 const urlDatabase = {};
 const users = {};
 
-
-
 // *******************RENDERING ROUTES *********************************
 
 // URL INDEX
 app.get("/urls", (req, res) => {
   const user_id = req.session.user_id;
-  const userURLS = urlsForUser(user_id);
+  const userURLS = urlsForUser(user_id, urlDatabase);
   let templateVars = { urls: userURLS, user: users[user_id] };
   res.render("urls_index", templateVars);
 });
@@ -51,8 +49,10 @@ app.get('/urls/new', (req, res) => {
 
 // URL page showing short and long URL
 app.get("/urls/:shortURL", (req, res) => {
+  
   const user_id = req.session.user_id;
-  const userUrls = urlsForUser(user_id);
+  const userUrls = urlsForUser(user_id, urlDatabase);
+  console.log(urlDatabase, user_id)
   let templateVars = { urls: userUrls, user: users[user_id], shortURL: req.params.shortURL };
   res.render("urls_show", templateVars);
 });
@@ -60,7 +60,7 @@ app.get("/urls/:shortURL", (req, res) => {
 // validates if the url belongs to current user
 app.post('/urls/:shortUrl', (req, res) => {
   const shortURL = req.params.shortURL;
-  if (req.session.user_id === urlDatabase[shortURL].user_id) {
+  if (req.session.user_id === urlDatabase[shortURL].userID) {
     urlDatabase[shortURL].longURL = req.body.updatedURL;
   }
   res.redirect(`/urls`);
@@ -70,7 +70,7 @@ app.post('/urls/:shortUrl', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
 
-  if (req.session.user_id === urlDatabase[shortURL].user_id) {
+  if (req.session.user_id === urlDatabase[shortURL].userID) {
     delete urlDatabase[shortURL];
   }
   res.redirect('/urls');
@@ -102,7 +102,7 @@ app.post('/login', (req, res) => {
     res.redirect('/urls');
   } else {
     const errorMessage = 'Login credentials not valid. Please make sure you enter the correct username and password.';
-    res.status(401).render('urls_error', { user: users[req.session.user_id], errorMessage });
+    res.status(401).render('urls_login', { user: null, errorMessage });
   }
 });
 

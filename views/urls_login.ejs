@@ -20,6 +20,12 @@
 
     <main style="margin: 1em;">
       <h3>Login</h3>
+      <% if (locals.errorMessage) { %>
+        <div class="alert alert-danger" role="alert">
+          <%= errorMessage %>
+        </div>
+        <% } %>
+      
       <form action="/login" method="POST">
         <div class="form-group mb-2">
           <label for="email">Email address</label>
