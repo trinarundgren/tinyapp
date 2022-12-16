@@ -49,10 +49,9 @@ app.get('/urls/new', (req, res) => {
 
 // URL page showing short and long URL
 app.get("/urls/:shortURL", (req, res) => {
-  
+
   const user_id = req.session.user_id;
   const userUrls = urlsForUser(user_id, urlDatabase);
-  console.log(urlDatabase, user_id)
   let templateVars = { urls: userUrls, user: users[user_id], shortURL: req.params.shortURL };
   res.render("urls_show", templateVars);
 });
@@ -133,12 +132,13 @@ app.post('/register', (req, res) => {
       req.session.user_id = userID;
       res.redirect('/urls');
     } else {
-      res.statusCode = 400;
-      res.send('<h2>400 - ERROR <br>Email already in use.</h2>');
+      const errorMessage = 'Email already in use.';
+    res.status(400).render('urls_login', { user: null, errorMessage });
     }
   } else {
-    res.statusCode = 400;
-    res.send('<h2>400 - ERROR <br>Both email and password fields are required.</h2>');
+    const errorMessage = 'Both email and password fields are required';
+    res.status(400).render('urls_login', { user: null, errorMessage });
+   
   }
 });
 
